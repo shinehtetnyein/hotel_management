@@ -12,6 +12,8 @@ return [
     | other UI elements where an application name needs to be displayed.
     |
     */
+    'default' => env('DB_CONNECTION', 'mysql'),
+
 
     'name' => env('APP_NAME', 'Laravel'),
 
