@@ -62,7 +62,7 @@ class ForgetPassword extends Controller
         $updatePassword = DB::table('forget_passwords')
             ->where([
                 'email' => $request->email,
-                // 'token' => $request->token,
+                'token' => $request->token,
             ])->first();
         // dd($updatePassword === true);
         if($updatePassword){

@@ -10,8 +10,8 @@ class StripeController extends Controller
 {
    public function stripe($id, $price,$email)
     {
-      // $stripeSecretKey = config('stripe.stripe_sk');
-      $stripe = new \Stripe\StripeClient('sk_test_51Pv9iJ2M2iNOUMbHjciL0xfKzXYoc6At5RPUcnye4Ugoaq2GHphqPZChGsQr9OCjp9N8xKH0zBikttoArrEJLXNs00fdvcqeBD');
+      $stripeSecretKey = config('stripe.stripe_sk');
+      $stripe = new \Stripe\StripeClient($stripeSecretKey);
       $response = $stripe->checkout->sessions->create([
           'line_items' => [
               [
@@ -45,7 +45,8 @@ class StripeController extends Controller
    public function success(Request $request){
 
         if(isset($request->session_id)){
-            $stripe = new \Stripe\StripeClient('sk_test_51Pv9iJ2M2iNOUMbHjciL0xfKzXYoc6At5RPUcnye4Ugoaq2GHphqPZChGsQr9OCjp9N8xKH0zBikttoArrEJLXNs00fdvcqeBD');
+            $stripeSecretKey = config('stripe.stripe_sk');
+            $stripe = new \Stripe\StripeClient($stripeSecretKey);
             $response = $stripe->checkout->sessions->retrieve($request->session_id);
             // dd($response);
 

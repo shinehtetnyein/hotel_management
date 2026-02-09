@@ -290,8 +290,9 @@ class UserController extends Controller
 }
 
     public function logout(){
-        Auth::forgetUser();
-        Session::getHandler()->gc(0);
+        Auth::logout();
+        session()->invalidate();
+        session()->regenerateToken();
         return redirect('/hotel');
     }
 

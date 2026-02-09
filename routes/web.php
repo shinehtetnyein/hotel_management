@@ -10,7 +10,7 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Models\Admin;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('home');
 });
 
 // User

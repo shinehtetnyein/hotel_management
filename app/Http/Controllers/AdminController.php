@@ -250,8 +250,9 @@ class AdminController extends Controller
    }
 
     public function adminLogout(){
-        Auth::forgetUser();
-        Session::getHandler()->gc(0);
+        Auth::guard('admin')->logout();
+        session()->invalidate();
+        session()->regenerateToken();
         return redirect('/admin');
     }
 
@@ -347,5 +348,3 @@ class AdminController extends Controller
         }
     }
 }
-
-
