@@ -1,0 +1,102 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Booking;
+use App\Models\Payment;
+use Illuminate\Http\Request;
+
+class StripeController extends Controller
+{
+   public function stripe(Request $request, $id, $price)
+    {
+      // $stripeSecretKey = config('stripe.stripe_sk');
+      $stripe = new \Stripe\StripeClient('sk_test_51Pv9iJ2M2iNOUMbHjciL0xfKzXYoc6At5RPUcnye4Ugoaq2GHphqPZChGsQr9OCjp9N8xKH0zBikttoArrEJLXNs00fdvcqeBD');
+      $response = $stripe->checkout->sessions->create([
+          'line_items' => [
+              [
+                  'price_data' => [
+                      'currency' => 'usd',
+                      'product_data' => [
+                          'name' => 'Room Booking', // Name of the product (required)
+                      ],
+                      'unit_amount' => $price * 100, // Amount in cents
+                  ],
+                  'quantity' => 1, // Quantity
+              ],
+          ],
+          'metadata' => [
+              'room_id' => $id,
+              'first_name' => $request->firstName,
+              'last_name' => $request->lastName,
+              'ph_no' => $request->phone,
+              'email' => $request->email,
+              'guest' => $request->guest,
+              'check_in' => $request->checkIn,
+              'check_out' => $request->checkOut,
+              'price'=>$price
+          ],
+          // 'automatic_tax' => ['enabled' => true],
+          'mode' => 'payment',
+          'success_url' => route('success') . '?session_id={CHECKOUT_SESSION_ID}',
+          'cancel_url' => route('cancel'),
+      ]);
+    //   dd($response);
+  
+      if (isset($response->id) && $response->id != '') {
+          session()->put('room_id',$id);
+          session()->put('first_name', $request->firstName);
+          session()->put('last_name', $request->lastName);
+          session()->put('ph_no', $request->phone);
+          session()->put('email', $request->email);
+          session()->put('check_in', $request->checkIn);
+          session()->put('check_out', $request->checkOut);
+          session()->put('guest', $request->guest);
+          session()->put('price', $price);
+          return redirect($response->url);
+      } else {
+          return redirect()->route('cancel');
+      }
+   }
+
+   public function success(Request $request){
+
+        if(isset($request->session_id)){
+            $stripe = new \Stripe\StripeClient('sk_test_51Pv9iJ2M2iNOUMbHjciL0xfKzXYoc6At5RPUcnye4Ugoaq2GHphqPZChGsQr9OCjp9N8xKH0zBikttoArrEJLXNs00fdvcqeBD');
+            $response = $stripe->checkout->sessions->retrieve($request->session_id);
+            // dd($response);
+
+            $booking = new Booking();
+            $booking->room_id = $response->id;
+            $booking->first_name = session()->get('first_name');
+            $booking->last_name = session()->get('last_name');
+            $booking->ph_no = session()->get('ph_no');
+            $booking->email = session()->get('email');
+            $booking->check_in = session()->get('check_in');
+            $booking->check_out = session()->get('check_out');
+            $booking->guest = session()->get('guest');
+            $booking->price = session()->get('price');
+            $booking->save();
+
+            session()->forget('room_id');
+            session()->forget('first_name');
+            session()->forget('last_name');
+            session()->forget('ph_no');
+            session()->forget('email');
+            session()->forget('check_in');
+            session()->forget('check_out');
+            session()->forget('guest');
+            session()->forget('price');
+
+            return "Payment is successful";
+        
+        }else{
+            return redirect()->route('cancel');
+        }
+
+   }
+
+   public function cancel(){
+    return view('cancel');
+   }
+}
