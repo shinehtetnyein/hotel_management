@@ -73,4 +73,4 @@ RUN chown -R www-data:www-data /var/www/html \
 EXPOSE 8080
 
 # Start Apache: adjust Listen and VirtualHost to use $PORT (fallback 8080) and serve the `public` directory
-CMD ["sh", "-c", "a2dismod mpm_event mpm_worker || true && a2enmod mpm_prefork || true && sed -i \"s/Listen 80/Listen ${PORT:-8080}/\" /etc/apache2/ports.conf && sed -i \"s/:80/:${PORT:-8080}/\" /etc/apache2/sites-available/000-default.conf && sed -i \"s#/var/www/html#/var/www/html/public#g\" /etc/apache2/sites-available/000-default.conf /etc/apache2/apache2.conf && apache2-foreground"]
+CMD ["sh", "-c", "a2dismod mpm_event mpm_worker || true && a2enmod mpm_prefork || true && printf 'ServerName localhost\n' > /etc/apache2/conf-available/servername.conf && a2enconf servername || true && sed -i \"s/Listen 80/Listen ${PORT:-8080}/\" /etc/apache2/ports.conf && sed -i \"s/:80/:${PORT:-8080}/\" /etc/apache2/sites-available/000-default.conf && sed -i \"s#/var/www/html#/var/www/html/public#g\" /etc/apache2/sites-available/000-default.conf /etc/apache2/apache2.conf && apache2-foreground"]
