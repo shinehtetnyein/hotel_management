@@ -43,5 +43,5 @@ RUN chmod -R 775 storage bootstrap/cache
 # Expose port
 EXPOSE 8080
 
-# Start Laravel
+# Start Laravel development server
 CMD php artisan serve --host=0.0.0.0 --port=8080
