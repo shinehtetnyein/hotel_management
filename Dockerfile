@@ -26,19 +26,48 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 # Copy project files
+FROM php:8.3-apache
+
+# Install system packages and node
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libzip-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    curl \
+    nodejs \
+    npm && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring zip bcmath
+
+# Enable Apache rewrite
+RUN a2enmod rewrite
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy project files
 COPY . .
 
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
-# Build frontend
-RUN npm install && npm run build
+# Build frontend assets
+RUN npm install && npm run build || true
 
-# Permissions
-RUN chmod -R 777 storage bootstrap/cache
+# Ensure proper permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 775 storage bootstrap/cache
 
-# Expose port
+# Expose a default port (informational)
 EXPOSE 8080
 
-# Start Laravel
-CMD php artisan serve --host=0.0.0.0 --port=8080
+# Start Apache: adjust Listen and VirtualHost to use $PORT (fallback 8080) and serve the `public` directory
+CMD ["sh", "-c", "sed -i 's/Listen 80/Listen ${PORT:-8080}/' /etc/apache2/ports.conf && sed -i 's/:80/:${PORT:-8080}/' /etc/apache2/sites-available/000-default.conf && sed -i 's#/var/www/html#/var/www/html/public#g' /etc/apache2/sites-available/000-default.conf /etc/apache2/apache2.conf && apache2-foreground"]
