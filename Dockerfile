@@ -46,6 +46,9 @@ RUN docker-php-ext-install pdo_mysql mbstring zip bcmath
 # Enable Apache rewrite
 RUN a2enmod rewrite
 
+# Ensure only one MPM is enabled (enable prefork for mod_php, disable event/worker)
+RUN a2dismod mpm_event mpm_worker || true && a2enmod mpm_prefork || true
+
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
