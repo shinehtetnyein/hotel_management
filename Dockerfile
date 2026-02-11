@@ -31,7 +31,7 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 RUN chmod -R 775 storage bootstrap/cache
 
 # Expose the port Railway provides
-EXPOSE 8000
+EXPOSE 8080
 
 # Start Laravel using PHP built-in server
 CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT}"]
